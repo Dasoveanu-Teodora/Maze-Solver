@@ -1,0 +1,83 @@
+VERILOD PRogram
+I used row, col, shift as latches to save values ​​multiple states.
+ (from one rising clock front to another)
+For row and col, the latch gives me the ability to keep previous row and column  visited by
+the robot so that i am able to find  the next move.
+I use latch movement for easy status tracking. Latch is formed because, in
+the way I thought of the algorithm, each move depends on the previous move, so you have to
+memorate.
+
+
+
+To solve the problem I used mainly two entities, orientation and direction.
+The machine has 3 states:
+-initializare -
+         Starea in care pregatesc robotelul : 
+                -initializez linia si coloana cu cele primite ca input robotelul
+	        -ii dau pentru inceput o orientare in functie de care calculez apoi 
+		 deplasarea
+		-fac maze_we = 1 sa marchez ca am fost in celula initiala
+                -actualizez starea 
+-initializare -
+-initialization -
+         Robot initialization:
+                -I initialize the row and column with those received as input to the robot
+                -I give them an orientation first, based on which I will calculate the
+                 displacement
+                -then maze_we = 1 to mark that I was in the initial cell
+                -update  status
+-set_deplasare:
+        The state in which I prepare my movement for the next research
+        - depending on the established displacement, I change my coordinates
+        to search the indicated cell
+        - I make maze_oe = 1 so I can read from the maze
+        - I pass the following state in which I test the value in the cell indicated by the movement
+
+-verificare
+	Starea in care dedic ce se intampla cu robotelul meu:
+	-daca maze_in = 0 => am drum liber si :
+		-maze_we = 1, marchez ca am fost in aceasta celula
+		-verific daca sunt pe conturul matricii =>  done = 1 => am gasit iesirea
+		-actualizez noua orientare care este data de deplasarea anterioara
+		-noua deplasare va fi la dreapta orientarii actulizate anterior:
+		 deplasare = (orientare - 1+4)%4;
+			deplasarea este mereu in dreapta orientarii
+                        am numerotat orientarile in sens trigonometric asa cum arata `define-urile
+         The state in which I check what happens to my robot:
+          -if maze_in = 0 => I'm free and:
+                         -maze_we = 1, cell marked
+                        -check if it is  contour of the matrix => done = 1 => I found the exit
+                        - else I update the new orientation which is given by the previous move
+                        -the new move will be to the right of the previously updated orientation:
+				 deplasare = (orientare - 1+4)%4;
+                         deplasare is always to the right of the orientation
+                        I numbered the trigonometric orientations as  'defines show
+                           0 1 2 3 
+			<-          ->
+           right direction           left direction ( not to deviate from the Wall follower by following the right wall)			
+          
+	  (the robot sees the opposite of our view)
+                      if the orientation is dreapta (0) => 0-1 = -1, I add 4 to make the result positive and
+                      does not influence it 
+                      (I tried to test ((orientare - 1)% 4) in verilog and I got -1 result
+                        and I was expecting it to be 3
+                        % 4 => dreapta -> jos shift (to resume the 4-orientation cycle)
+                      in cases where the orientation is > 1 fromula could be 
+                      deplasare = orientare - 1,
+                      adding in the case of orientation = 0 module (%)  4 =>
+                      does not influence the result for these cases (orientare = 1,2,3).
+               -the next state will be to return to the set_deplasare 
+               to resume the algorithm for choosing the next free cell
+	
+
+      -if maze_in = 1 => I have to try a new direction with the same orientation:
+             - I return to the position where I last had maze_in = 0
+             - the new displacement will be to the right of the previous displacement 
+             (in the established trigonometric sense)
+			deplasare =  (deplasare + 1) % 4;
+		this time I do% 4 for when deplasare = 3,
+           (to resume the cycle of the 4 orientations) 3 + 1 = 4 => 4% 4 = 0 => deplasare = 0
+          The orientation remains the same, if I can't move to the right side of the orientation 
+        (from the robot's perspective), I will try the next direction in trigonometric direction 
+       (the robot's perspective being the next in trigonometric direction)
+- the next state implies the resumption of the verification cycle
