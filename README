@@ -1,4 +1,4 @@
-VERILOD PRogram
+VERILOG Program
 I used row, col, shift as latches to save values ​​multiple states.
  (from one rising clock front to another)
 For row and col, the latch gives me the ability to keep previous row and column  visited by
